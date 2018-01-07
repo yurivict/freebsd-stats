@@ -1,0 +1,20 @@
+#!/bin/sh
+
+##
+## Prints simple stats about the given port committer
+##
+
+[ -n "$1" ] || ! echo "Usage: $0 user-name" || exit 1
+
+([ -f /tmp/svn.log ] && cat /tmp/svn.log ||
+ (echo "downloading the SVN log, please wait ..." >&2 ; svn log https://svn.FreeBSD.org/ports/head | tee /tmp/svn.log)) | awk \
+'
+  / \| '$1' \| / {cnt++; if (date2 == "") date2 = $5; date1=$5;}
+  END {
+    if (cnt > 0) {
+      print "date-range=",date1,"-",date2," lifetime-commits=",cnt
+    } else {
+      print "No commits by","'$1'","found"
+    }
+  }
+'
